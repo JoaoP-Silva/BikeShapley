@@ -6,16 +6,7 @@
 #include <set>
 #include <ctype.h>
 #include <queue>
-
-//Tipo de dado coordenada (linha, coluna) para acessar um ponto na matriz//
-typedef std::pair<int, int> coord;
-
-//Tipo de dado pessoa (id, level) onde level é o passo que a pessoa foi encontrada//
-typedef std::pair<int, int> people;
-
-//Tipo de dado coordAt, para salvar uma coordenada relacionada a um passo//
-typedef std::pair<coord, int>coordAt;
-
+#include "DataTypes.h"
 
 /*Funcao: genPrefListRecursive(...){}
 *	Descricao: Funcao recursiva para gerar a lista de preferencias de uma bicicleta qualquer(lista e alocada na variavel prefList).
@@ -32,6 +23,7 @@ typedef std::pair<coord, int>coordAt;
 */
 void genPrefListRecursive(char** matrix, int maxRow, int maxCollum, coord point, std::set<coord>& visited, std::queue<coordAt>& q, std::vector<people>* prefList, unsigned int numPeople) {
 	int level = 0;
+	//Caso a fila ja tinha sido iniciada, o level é atualizado
 	if (q.size() > 0) {
 		level = q.front().second + 1;
 		q.pop();
@@ -40,12 +32,29 @@ void genPrefListRecursive(char** matrix, int maxRow, int maxCollum, coord point,
 	int x = point.first; int y = point.second;
 	char charAtPoint = matrix[x][y];
 	if (charAtPoint >= 'a' && charAtPoint <= 'j') {
-		int tmp = charAtPoint - '0';
-		prefList->push_back(std::pair<unsigned int, unsigned int>(tmp, level));
+		int tmp = charAtPoint - '0' - 1 - '0';
+		//Caso ja tenha sido adicionado algum item ao vetor resultante, insere o proximo item de forma ordenada
+		if (!prefList->empty()) {
+			std::vector<people>::iterator prefIt = prefList->end();
+			for (int i = prefList->size() - 1; i >= 0; i--) {
+				if (prefList->at(i).second == level && prefList->at(i).first < tmp  || level > prefList->at(i).second) {
+					prefList->insert(prefIt, std::pair<unsigned int, unsigned int>(tmp, level));
+					break;
+				}
+				prefIt--;
+				if (prefIt == prefList->begin()) {
+					prefList->insert(prefIt, std::pair<unsigned int, unsigned int>(tmp, level));
+				}
+			}
+		}
+		else {
+			prefList->push_back(std::pair<unsigned int, unsigned int>(tmp, level));
+		}
 		if (prefList->size() == numPeople) {
 			return;
 		}
 	}
+	//Testa se pode aplicar BFS em cada uma das direcoes possiveis
 	if (y > 0 && (matrix[x][y - 1] != '-')) {
 		coord newCoord(x, y - 1);
 		it = visited.find(newCoord);
@@ -90,7 +99,7 @@ void genPrefListRecursive(char** matrix, int maxRow, int maxCollum, coord point,
 *				coord init - Variavel do tipo coord, par (linha, coluna) da coordenada da bicicleta que sera gerada a lista.
 *				unsigned int numPeople: Inteiro positivo com o numero de pessoas que tem no problema
 *	
-*	Retorna: Um vetor do tipo std::vector<people>, com pares (Id pessoa, distancia bicicleta).
+*	Retorna: Um vetor do tipo std::vector<people> ordenado, com pares (Id pessoa, distancia bicicleta).
 */
 std::vector<people>* genPrefList(char** matrix, int maxRow, int maxCollum, coord init, unsigned int numPeople){
 	std::vector<people>* prefList = new std::vector<people>;
