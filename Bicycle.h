@@ -26,7 +26,6 @@ public:
 	int getId();
 	void setLoc(coord Loc);
 	coord getLoc();
-	void setMatch(int _m);
 	int getMatch();
 
 /*Funcao: bool genPrefList(std::vector<people>* prefList)
@@ -43,8 +42,10 @@ public:
 	int getPrefListAt(int i);
 	//Gera a lista de rankings
 	bool genRankList();
-	//Retorna um item na posicao i da lista de rankings
+	//Retorna o ranking da pessoa i
 	int getRankListAt(int i);
+	//Tenta um casamento, se aceita retorna o item que estava casado anteriormente, senao retorna -1
+	int tryMatch(int _m);
 };
 
 #endif

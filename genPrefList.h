@@ -6,6 +6,7 @@
 #include <set>
 #include <ctype.h>
 #include <queue>
+#include <algorithm>
 #include "DataTypes.h"
 
 /*Funcao: genPrefListRecursive(...){}
@@ -37,6 +38,7 @@ void genPrefListRecursive(char** matrix, int maxRow, int maxCollum, coord point,
 		if (!prefList->empty()) {
 			std::vector<people>::iterator prefIt = prefList->end();
 			for (int i = prefList->size() - 1; i >= 0; i--) {
+				int var = prefList->at(i).second;
 				if (prefList->at(i).second == level && prefList->at(i).first < tmp  || level > prefList->at(i).second) {
 					prefList->insert(prefIt, std::pair<unsigned int, unsigned int>(tmp, level));
 					break;
@@ -68,6 +70,7 @@ void genPrefListRecursive(char** matrix, int maxRow, int maxCollum, coord point,
 		coord newCoord(x, y + 1);
 		it = visited.find(newCoord);
 		if (it == visited.end()) {
+			visited.insert(newCoord);
 			coordAt auxToNew(newCoord, level);
 			q.push(auxToNew);
 		}
@@ -76,6 +79,7 @@ void genPrefListRecursive(char** matrix, int maxRow, int maxCollum, coord point,
 		coord newCoord(x - 1, y);
 		it = visited.find(newCoord);
 		if (it == visited.end()) {
+			visited.insert(newCoord);
 			coordAt auxToNew(newCoord, level);
 			q.push(auxToNew);
 		}
@@ -84,6 +88,7 @@ void genPrefListRecursive(char** matrix, int maxRow, int maxCollum, coord point,
 		coord newCoord(x + 1, y);
 		it = visited.find(newCoord);
 		if (it == visited.end()) {
+			visited.insert(newCoord);
 			coordAt auxToNew(newCoord, level);
 			q.push(auxToNew);
 		}
@@ -101,7 +106,7 @@ void genPrefListRecursive(char** matrix, int maxRow, int maxCollum, coord point,
 *	
 *	Retorna: Um vetor do tipo std::vector<people> ordenado, com pares (Id pessoa, distancia bicicleta).
 */
-std::vector<people>* genPrefList(char** matrix, int maxRow, int maxCollum, coord init, unsigned int numPeople){
+std::vector<people>* genPrefList_Bicycle(char** matrix, int maxRow, int maxCollum, coord init, unsigned int numPeople){
 	std::vector<people>* prefList = new std::vector<people>;
 	std::set<coord> visited;
 	visited.insert(init);
@@ -109,6 +114,48 @@ std::vector<people>* genPrefList(char** matrix, int maxRow, int maxCollum, coord
 	unsigned int level = 0;
 	genPrefListRecursive(matrix, maxRow, maxCollum, init, visited , q, prefList, numPeople);
 	return(prefList);
+}
+
+
+
+/*Funcao: genPrefList_User(std::vector<int>& initPref){}
+*	Descricao:	Funcao a ser chamada no main para gerar a lista de preferencias de um usuario qualquer.
+*	Entrada:	std::vector<int>& initPref - Referencia para um vetor de preferencias no modelo da entrada,
+*				com numeros inteiros indicando o quanto a pessoa prefere cada bicicleta. A posicao do valor na entrada
+*				indica o Id da bicicleta que a preferencia esta numerada.
+* 
+* Retorna:		void.
+*/
+void genPrefList_User(std::vector<int>& initPref) {
+	std::vector<std::pair<int, int>> pairVector;
+	for (int i = 0; i < initPref.size(); i++) {
+		pairVector.push_back(std::make_pair(initPref[i], i));
+	}
+	std::sort(pairVector.begin(), pairVector.end(), std::greater<std::pair<int, int>>());
+	std::vector<int> subv, result;
+	if (!pairVector.empty()) {
+		subv.push_back(pairVector[0].second);
+	}
+	for (int i = 1; i < initPref.size(); i++) {
+		if (pairVector[i - 1].first == pairVector[i].first) {
+			subv.push_back(pairVector[i].second);
+		}
+		else {
+			std::sort(subv.begin(), subv.end());
+			for (int i = 0; i < subv.size(); i++) {
+				result.push_back(subv[i]);
+			}
+			subv.clear();
+			subv.push_back(pairVector[i].second);
+		}
+	}
+	if (!subv.empty()) {
+		std::sort(subv.begin(), subv.end());
+		for (int i = 0; i < subv.size(); i++) {
+			result.push_back(subv[i]);
+		}
+	}
+	initPref = result;
 }
 
 
