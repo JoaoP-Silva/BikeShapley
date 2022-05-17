@@ -6,7 +6,7 @@
 int main(int argc, char* argv[]) {
 	int numVis, rows, collums;
 	std::ifstream inFile;
-	inFile.open("teste.txt");
+	inFile.open(argv[1]);
 
 	//Lendo o numero de pessoas, linhas e colunas do mapa
 	inFile >> numVis; inFile >> rows;  inFile >> collums;
